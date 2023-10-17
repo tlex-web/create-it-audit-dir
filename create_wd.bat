@@ -9,7 +9,7 @@ REM Get project name and entity name from user
 set /p "client_name=Enter client name: "
 set /p "client_year=Enter period under audit: "
 set /p "prior_year_wd=Enter prior year working directory (leave blank if not applicable): "
-echo You are currently working in %cwd:~0,-4%
+echo. You are currently working in %cwd:~0,-4%
 set /p "project_wd=Please confirm that this is the right directory (Y|n): "
 
 REM Check if both variables are provided
@@ -26,20 +26,18 @@ if "!project_wd!"=="n" (
     exit /b 1
 )
 
-REM Create the main client folder and update the cwd variable
-mkdir "!client_name! - !client_year!"
-set cwd=!cwd:~0,-4!\!client_name! - !client_year!
-
 REM Make sure that the template files exist or the file location changed
 if not exist "L:\IT Audit docs\IT External Audit\Templates\*" (
     echo Template files not found - Please check the file path.
     exit /b 1
 )
 
-REM Make sure that the prior year working directory exists
-if not exist "!prior_year_wd!" (
-    echo Prior year working directory not found - Please check the file path.
-    exit /b 1
+REM Make sure that the prior year working directory exists if not blank
+if not "!prior_year_wd!"=="" (
+    if not exist "!prior_year_wd!" (
+        echo Prior year working directory not found - Please check the file path.
+        exit /b 1
+    )
 )
 
 REM Define the array of folder names
@@ -56,6 +54,11 @@ set folders[9]="03 - Reporting/Client feedback"
 set folders[10]="04 - CAAT & Regulatory"
 set folders[11]="04 - CAAT & Regulatory/JET"
 set folders[12]="05 - ITAC"
+
+REM Create the main client folder and update the cwd variable
+mkdir "!client_name! - !client_year!"
+set cwd=!cwd:~0,-4!\!client_name! - !client_year!
+
 
 if exist !prior_year_wd! (
     echo Prior year audit found. Copying file structure...
