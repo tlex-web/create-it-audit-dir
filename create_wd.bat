@@ -9,7 +9,7 @@ REM Get project name and entity name from user
 set /p "client_name=Enter client name: "
 set /p "client_year=Enter period under audit: "
 set /p "prior_year_wd=Enter prior year working directory (leave blank if not applicable): "
-echo. You are currently working in %cwd:~0,-4%
+echo "You are currently working in: "%cwd:~0,-4%
 set /p "project_wd=Please confirm that this is the right directory (Y|n): "
 
 REM Check if both variables are provided
@@ -57,25 +57,36 @@ set folders[12]="05 - ITAC"
 
 REM Create the main client folder and update the cwd variable
 mkdir "!client_name! - !client_year!"
+if errorlevel 1 (
+    echo Error creating client folder.
+    exit /b 1
+)
 set cwd=!cwd:~0,-4!\!client_name! - !client_year!
+echo Working directory: !cwd!
+cd !cwd!
 
+echo !cwd! !prior_year_wd!
 
 if exist !prior_year_wd! (
     echo Prior year audit found. Copying file structure...
+    echo !cwd!
 
-    xcopy /E /I /Y !prior_year_wd! !cwd! || (
+
+    xcopy /E /I /Y "!prior_year_wd!" "!cwd!" || (
         echo Error copying prior year audit files.
         exit /b 1
     )
 ) else (
     REM Loop over the array and create folders
 
-    cd !cwd!
-
     for /L %%f in (0,1,12) do (
         echo Creating folder !folders[%%f]! ...
 
         mkdir !folders[%%f]!
+        if errorlevel 1 (
+            echo Error creating folder !folders[%%f]!.
+            exit /b 1
+        )
 
         REM Copy template files into the client folders
 
@@ -138,11 +149,6 @@ if exist !prior_year_wd! (
             echo 1. Open the GitHub repository using this link: !jet_repo_link! >> !folders[%%f]!\JET-Instructions.txt
             echo 2. Follow the instructions in the README sections of the repository >> !folders[%%f]!\JET-Instructions.txt
             
-        )
-
-        if !errorlevel! neq 0 (
-            echo Error creating folder !folders[%%f]!.
-            exit /b 1
         )
     )
 )
